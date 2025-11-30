@@ -1,0 +1,30 @@
+services:
+  backend:
+    build: ./backend
+    container_name: house_price_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - /app/model
+    networks:
+      - house-network
+
+  frontend:
+    build: ./frontend
+    container_name: house_price_frontend
+    environment:
+      REACT_APP_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - house-network
+
+networks:
+  house-network:
+    driver: bridge
