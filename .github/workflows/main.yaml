@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up QEMU (multi-arch)
         uses: docker/setup-qemu-action@v3
@@ -37,6 +39,7 @@ jobs:
 
       # ---------- Build & push frontend ----------
       - name: Build & push frontend image (sha + latest)
+        id: frontend_build
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
@@ -49,6 +52,7 @@ jobs:
 
       # ---------- Build & push backend ----------
       - name: Build & push backend image (sha + latest)
+        id: backend_build
         uses: docker/build-push-action@v5
         with:
           context: ./backend
@@ -64,3 +68,33 @@ jobs:
           echo "Frontend image: ${{ env.IMAGE_PREFIX }}-frontend:latest"
           echo "Backend image:  ${{ env.IMAGE_PREFIX }}-backend:latest"
 
+  trigger_render_deploys:
+    name: Trigger Render deploys
+    runs-on: ubuntu-latest
+    needs: build_push
+    steps:
+      - name: Trigger frontend deploy on Render
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          SERVICE_ID: ${{ secrets.RENDER_FRONTEND_SERVICE_ID }}
+        run: |
+          echo "Triggering Render deploy for frontend service ${SERVICE_ID}..."
+          curl -s -X POST "https://api.render.com/v1/services/${SERVICE_ID}/deploys" \
+            -H "Authorization: Bearer ${RENDER_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d '{"clearCache": false}' \
+            | tee render_frontend_response.json
+          cat render_frontend_response.json
+
+      - name: Trigger backend deploy on Render
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          SERVICE_ID: ${{ secrets.RENDER_BACKEND_SERVICE_ID }}
+        run: |
+          echo "Triggering Render deploy for backend service ${SERVICE_ID}..."
+          curl -s -X POST "https://api.render.com/v1/services/${SERVICE_ID}/deploys" \
+            -H "Authorization: Bearer ${RENDER_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d '{"clearCache": false}' \
+            | tee render_backend_response.json
+          cat render_backend_response.json
