@@ -46,7 +46,7 @@ jobs:
           file: ./frontend/Dockerfile
           push: true
           build-args: |
-            REACT_APP_API_URL=https://house-price-prediction-backend-latest.onrender.com/
+            REACT_APP_API_URL=https://house-price-prediction-backend-latest.onrender.com
           tags: |
             ${{ env.IMAGE_PREFIX }}-frontend:${{ github.sha }}
             ${{ env.IMAGE_PREFIX }}-frontend:latest
