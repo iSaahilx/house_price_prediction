@@ -1,5 +1,6 @@
 # Docker Setup for House Price Prediction
-
+A comparison done between XGBoost and RandomForest to identify which tree based model works best.
+Build using Microservices, Docker and MLOPS, CI/CD pipelines.
 This project uses Docker Compose to run both the backend and frontend in separate containers.
 
 ## Prerequisites
